@@ -93,3 +93,36 @@ strcpy(pathEncryptedBuff, ptr);
 strncpy(pathEncvDirBuff, path, ptr-path);
 ```
 - memiliki fungsi yaitu disini akan berjalan untuk kondisi (1.0 & 0.1) yang akan mendefinisikan dan mengisi buffer untuk directory dan encv1_ dan mengisi buffer yang telah disediakan. 
+
+```if (isWriteOper) {
+  char pathFileBuff[1000];
+  char pathDirBuff[1000];
+  getDirAndFile(pathDirBuff, pathFileBuff, pathEncryptedBuff);
+  decrypt(pathDirBuff, 0);
+  sprintf(fixPath, "%s%s/%s", pathEncvDirBuff, pathDirBuff, pathFileBuff);
+} 
+```
+- saat kondisi ```(1.0)``` atau hanya ```isWriteOper``` yang memiliki nilai, if() disini akan mendefinisikan buffer untuk file dan directory dan menjalankan fungsi ```getDirAndFile()``` yang akan me-return directory dan file berdasarkan dari path yang ada di ```pathEncryptedBuff``` dan akan men ```decrypt()```nya yang selanjutnya akan di store di buffer ```fixpath[]``` pendeskripsian dan menyimpannya di dalam buffer ```fixPathsprintf(fixPath, "%s%s/%s", pathEncvDirBuff, pathDirBuff, pathFileBuff);``` dengan format (encv1_,pathdir,pathfile)
+
+```
+else if (isFileAsked) {
+  char pathFileBuff[1000];
+  char pathDirBuff[1000];
+  char pathExtBuff[1000];
+  getDirAndFile(pathDirBuff, pathFileBuff, pathEncryptedBuff);
+  char *whereIsExtension = strrchr(pathFileBuff, '.');
+  if (whereIsExtension-pathFileBuff <= 1) {
+    decrypt(pathDirBuff, 0);
+    decrypt(pathFileBuff, 0);
+    sprintf(fixPath, "%s%s/%s", pathEncvDirBuff, pathDirBuff, pathFileBuff);
+  } else {
+    char pathJustFileBuff[1000];
+    memset(pathJustFileBuff, 0, sizeof(pathJustFileBuff));
+    strcpy(pathExtBuff, whereIsExtension);
+    snprintf(pathJustFileBuff, whereIsExtension-pathFileBuff+1, "%s", pathFileBuff);
+    decrypt(pathDirBuff, 0);
+    decrypt(pathJustFileBuff, 0);
+    sprintf(fixPath, "%s%s/%s%s", pathEncvDirBuff, pathDirBuff, pathJustFileBuff, pathExtBuff);
+  }
+ ```
+ 
