@@ -25,3 +25,71 @@ untuk membuat program yang akan mengenkripsi suatu nama file/folder, dibutuhkan 
 : adalah sebuah kondisi proses akan menyimpan jika mendeteksi adanya perubahan pada database/log file. 
 
 Setiap system call akan menggunakan fungsi ```changePath()``` ```getDirAndFile()``` ```decrypt()``` yang berfungsi untuk dekripsi dan melakukan pengambilan juga pengecekan untuk setiap pathfile extension dan directory. 
+
+- Fungsi ```changPath()```
+```void changePath(char *fpath, const char *path, int isWriteOper, int isFileAsked) {
+  char *ptr = strstr(path, "/encv1_");
+  int state = 0;
+  if (ptr != NULL) {
+    if (strstr(ptr+1, "/") != NULL) state = 1;
+  }
+  char fixPath[1000];
+  memset(fixPath, 0, sizeof(fixPath));
+  if (ptr != NULL && state) {
+    ptr = strstr(ptr+1, "/");
+    char pathEncvDirBuff[1000];
+    char pathEncryptedBuff[1000];
+    strcpy(pathEncryptedBuff, ptr);
+    strncpy(pathEncvDirBuff, path, ptr-path);
+    if (isWriteOper) {
+      char pathFileBuff[1000];
+      char pathDirBuff[1000];
+      getDirAndFile(pathDirBuff, pathFileBuff, pathEncryptedBuff);
+      decrypt(pathDirBuff, 0);
+      sprintf(fixPath, "%s%s/%s", pathEncvDirBuff, pathDirBuff, pathFileBuff);
+    } else if (isFileAsked) {
+      char pathFileBuff[1000];
+      char pathDirBuff[1000];
+      char pathExtBuff[1000];
+      getDirAndFile(pathDirBuff, pathFileBuff, pathEncryptedBuff);
+      char *whereIsExtension = strrchr(pathFileBuff, '.');
+      if (whereIsExtension-pathFileBuff <= 1) {
+        decrypt(pathDirBuff, 0);
+        decrypt(pathFileBuff, 0);
+        sprintf(fixPath, "%s%s/%s", pathEncvDirBuff, pathDirBuff, pathFileBuff);
+      } else {
+        char pathJustFileBuff[1000];
+        memset(pathJustFileBuff, 0, sizeof(pathJustFileBuff));
+        strcpy(pathExtBuff, whereIsExtension);
+        snprintf(pathJustFileBuff, whereIsExtension-pathFileBuff+1, "%s", pathFileBuff);
+        decrypt(pathDirBuff, 0);
+        decrypt(pathJustFileBuff, 0);
+        sprintf(fixPath, "%s%s/%s%s", pathEncvDirBuff, pathDirBuff, pathJustFileBuff, pathExtBuff);
+      }
+    } else {
+      decrypt(pathEncryptedBuff, 0);
+      sprintf(fixPath, "%s%s", pathEncvDirBuff, pathEncryptedBuff);
+    }
+  } else {
+    strcpy(fixPath, path);
+  }
+  if (strcmp(path, "/") == 0) {
+    sprintf(fpath, "%s", dirpath);
+  } else {
+    sprintf(fpath, "%s%s", dirpath, fixPath);
+  }
+}
+```
+- Terdapat dua kondisi state, dengan defalut ```0```, state ini berfungsi untuk path yang hanya memiliki satu directory setelah encv_1 CONTOH: encv_sisop. dan ```1``` untuk path yang masih berlanjut setelah encv_1 CONTOH: encv1_/document/sisop
+- Fungsi ```void changePath(char *fpath, const char *path, int isWriteOper, int isFileAsked) {``` akan melakukan pencarian terhadap file name dengan nama "encv1 _ "
+- Fungsi ```if (ptr != NULL) {``` apabila tidak ada tulisan "/encv1_" ```if (strstr(ptr+1, "/") != NULL) state = 1;``` dan jika setelah "/encv1_" ada path lagi, statenya = 1 sesuai pada ketentuan kondisi state diatas. 
+- Fungsi ```char fixPath[1000]; memset(fixPath, 0, sizeof(fixPath));```
+untuk inisiasi buffer yang berfungsi sebagai tempat menyimpan proccessed path dari tiap kondisi yang berbeda. ```char fixPath[1000];``` memiliki arti yaitu mengatur buffer dengan set size memori dengan panjang array 1000. 
+```if (ptr != NULL && state) {
+ptr = strstr(ptr+1, "/");
+char pathEncvDirBuff[1000];
+char pathEncryptedBuff[1000];
+strcpy(pathEncryptedBuff, ptr);
+strncpy(pathEncvDirBuff, path, ptr-path);
+```
+- memiliki fungsi yaitu disini akan berjalan untuk kondisi (1.0 & 0.1) yang akan mendefinisikan dan mengisi buffer untuk directory dan encv1_ dan mengisi buffer yang telah disediakan. 
