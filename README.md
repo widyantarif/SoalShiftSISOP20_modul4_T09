@@ -129,3 +129,15 @@ Untuk kondisi lainnya yakni apabila hanya kondisi ```0.1``` ```else if (isFileAs
 ```sprintf(fixPath, "%s%s/%s", pathEncvDirBuff, pathDirBuff, pathFileBuff);```. dengan format "encv1 _ , directory path, file path". Begitupun apabila ```else {``` ditemukan ekstensi sesuai dengan path yang ditentukan sejumlah lebih dari 1 karakter, maka akan dilakukan penyimpanan ekstensi dari file tersebut ke dalam file path dan dilanjutkan dengan proses pendeskripsian ```decrypt(pathDirBuff, 0);``` pada directory path dan ```decrypt(pathFileBuff, 0);``` pada file path. Dan hasil deskripsi tersebut disimpan ke dalam ```fixPath``` 
 ```sprintf(fixPath, "%s%s/%s%s", pathEncvDirBuff, pathDirBuff, pathJustFileBuff, pathExtBuff);``` dengan format "__encv1 _ , directory path, file path, ekstensi".
 
+```
+else {
+  decrypt(pathEncryptedBuff, 0);
+  sprintf(fixPath, "%s%s", pathEncvDirBuff, pathEncryptedBuff);
+}
+```
+- adalah fungsi yang akan bekerja saat kondisi state ```(0.0)```, ```(1.0)```, ```(0.1)``` tidak memiliki nilai maka ```decrypt(pathEncryptedBuff, 0);``` akan terjadi proses pendeskripsian pada isi dari buffer tersebut dan kemudian ```sprintf(fixPath, "%s%s", pathEncvDirBuff, pathEncryptedBuff);``` disimpan di dalam fixPath dengan format "encv1 _ , decrypt path".
+```
+else {
+  strcpy(fixPath, path);
+}
+```
