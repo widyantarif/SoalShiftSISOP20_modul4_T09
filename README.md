@@ -141,3 +141,55 @@ else {
   strcpy(fixPath, path);
 }
 ```
+
+
+# Soal 4
+Agar integritas file system tersebut lebih terjamin, maka Jasir juga membuat log file yang berguna untuk menyimpan daftar perintah dari system call yang telah dijalankan. Adapun ketentuan dari log file tersebut yakni sebagai berikut :
+1. log akan terbagi menjadi 2 (dua) level yaitu level INFO dan level ```warning```.
+2. log level ```warning``` merupakan pencatatan log untuk system call ```rmdir``` dan ```unlink```.
+3. Sehingga pencatatan log untuk system call yang lain akan ditangani oleh log level ```info```.
+4. Adapun format logging yakni ```[LEVEL]::[yy][mm][dd]-[HH]:[MM]:[SS]::[CMD]::[DESC ...]``` keterangan sebagai berikut: 
+- level: level logging
+- yy: tahun 2 digit
+- mm: bulan 2 digit
+- dd: hari 2 digit
+- HH: jam 2 digit
+- MM: menit dua digit
+- SS: detik dua digit
+- CMD: system call terpanggil
+- DESC: deskripsi tambahan (kalo lebih dari satu dipisah dengan ::)
+
+# Penyelesaian
+
+```
+static const char *logpath = "/home/shempaque/modul4/fuse/fs_log.txt";
+
+void logFile(char *level, char *cmd, int res, int lenDesc, const char *desc[]) {
+FILE *f = fopen(logpath, "a");
+time_t t;	
+struct tm *tmp;
+char timeBuff[100];
+
+time(&t);
+tmp = localtime(&t);
+strftime(timeBuff, sizeof(timeBuff), "%y%m%d-%H:%M:%S", tmp);
+
+fprintf(f, "%s::%s::%s::%d", level, timeBuff, cmd, res); 
+for (int i = 0; i < lenDesc; i++) {	
+  fprintf(f, "::%s", desc[i]);
+}
+fprintf(f, "\n");
+
+fclose(f);
+```
+- ```static const char *logpath = "/home/shempaque/modul4/fuse/fs_log.txt";``` adalah directory tempat untuk meletakkan log file bernama fs_log.txt
+- Pada fungsi logFile() ```void logFile(char *level, char *cmd, int res, int lenDesc, const char *desc[]) {``` akan mengatur format logging yang sesuai dengan ketentuan log file pada soal di atas antara lain ```level``` untuk menunjukkan system call yang terjadi termasuk ke dalam level mana, ```cmd``` akan menunjukkan system call yang terpanggil, ```res``` akan menyimpan status dari file tersebut, ```lenDesc``` akan menunjukkan panjang file path dan ```desc[]``` akan menunjukkan absolute file path.
+- Kemudian, dilanjutkan dengan ```FILE *f = fopen(logpath, "a");``` proses membuat log file sesuai dengan directory path yang telah ditentukan.
+- Dalam format logging terdapat waktu pemanggilan system call tersebut. Oleh karena itu, kita membutuhkan ```char timeBuff[100];``` sebuah buffer yang berguna untuk menyimpan waktu pemanggilan system call tersebut dengan menggunakan fungsi ```strftime(timeBuff, sizeof(timeBuff), "%y%m%d-%H:%M:%S", tmp);```
+- Format logging dalam fungsi logFile() akan dituliskan ke dalam log file menggunakan fungsi ```fprintf(f, "%s::%s::%s::%d", level, timeBuff, cmd, res);```
+- Lalu, untuk menunjukkan desc[] absolute file path maka akan digunakan fungsi iterasi di bawah ini
+```
+for (int i = 0; i < lenDesc; i++) {	
+fprintf(f, "::%s", desc[i]);
+```
+karena absolute file path akan ditemukan sepanjang ```lenDesc``` yang menunjukkan panjang file path tersebut.
